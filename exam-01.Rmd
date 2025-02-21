@@ -191,8 +191,7 @@ airports %>%
 ![](img/plot-to-recreate.png)
 ```{r}
 flights %>%
-  filter(dest %in% c("PHL", "RDU"))
-%>%
+  filter(dest %in% c("PHL", "RDU")) %>%
   filter(month==12) %>%
   mutate(
     Arrival = case_when(
