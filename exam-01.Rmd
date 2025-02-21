@@ -96,7 +96,7 @@ The main data is in the `flights` data frame, but there are additional data sets
 
 ## Questions
 
-1.  **Question 1 (10 points)** - What are the ten most common destinations for flights from NYC airports in 2013?
+1.  **Question 1 (10 points)** - What are the ten most common destinations for flights from NYC airports in 2013?***The ten most common destinations are "ORD", "ATL", "LAX", "BOS", "MCO", "CLT", "SFO", "FLL", "MIA", and "DCA".***
     Make a table that lists these in descending order of frequency and shows the number of fligts heading to each airport.
 ```{r}
 flights %>%
@@ -105,9 +105,16 @@ flights %>%
 
 ```
 2.  **Question 2 (10 points)** - Which airlines have the most flights departing from NYC airports in 2013?
+***The airlines with the most flights departing from NYC airports are United Air Lines Inc., JetBLue Airways, and ExpressJet Airlines.***
     Make a table that lists these in descending order of frequency and shows the number of flights for each airline.
     In your narrative mention the names of the airlines as well.
     *Hint:* You can use the `airlines` dataset to look up the airline name based on `carrier` code.
+```{r}
+flights %>%
+  count(carrier) %>%
+  inner_join(airlines, by = "carrier") %>%
+  arrange(desc(n))
+```
 
 3.  **Question 3 (10 points)** - Consider only flights that have non-missing arrival delay information.
     Your answer should include the name of the carrier in addition to the carrier code and the values asked.
