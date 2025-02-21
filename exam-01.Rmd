@@ -97,7 +97,7 @@ The main data is in the `flights` data frame, but there are additional data sets
 ## Questions
 
 1.  **Question 1 (10 points)** - What are the ten most common destinations for flights from NYC airports in 2013?***The ten most common destinations are "ORD", "ATL", "LAX", "BOS", "MCO", "CLT", "SFO", "FLL", "MIA", and "DCA".***
-    Make a table that lists these in descending order of frequency and shows the number of fligts heading to each airport.
+    Make a table that lists these in descending order of frequency and shows the number of flights heading to each airport.
 ```{r}
 flights %>%
   count(dest) %>%
@@ -120,14 +120,29 @@ flights %>%
     Your answer should include the name of the carrier in addition to the carrier code and the values asked.
 
     a\.
-    Which carrier had the highest mean arrival delay?
+    Which carrier had the highest mean arrival delay?***The Frontier Airlines Inc. has the highest mean arrival delay of 21.9207048 minutes.***
 
     b\.
-    Which carrier had the lowest mean arrival delay?
-
-4.  **Question 4 (10 points)** - What was the mean temperature at the origin airport on the day with the highest departure delay?
+    Which carrier had the lowest mean arrival delay? ***The Alaska Airlines Inc. has the lowest mean arrival delay of -9.9308886 minutes.***
+```{r}
+flights %>%
+  group_by(carrier) %>%
+  summarise(delay = mean(arr_delay, na.rm = TRUE)) %>%
+  inner_join(airlines) %>%
+  arrange(desc(delay))
+```
+4.  **Question 4 (10 points)** - What was the mean temperature at the origin airport on the day with the highest departure delay?***The highest departure delay # 1301 minutes while on the flight to JFK on January 9th. The mean temperature for that day # 42.6575 degrees.***
     Your answer should include the name of origin airport, the date with the highest departure delay, and the mean temperature on that day.
-
+```{r}
+flights %>%
+  group_by(origin, month, day) %>%
+  arrange(desc(dep_delay))
+```
+```{r}
+weather %>%
+  filter(month == 1, day == 9, origin == "JFK") %>%
+  summarise(mean_temp = mean(temp))
+```
 5.  **Question 5 (15 points)** - Consider breaking the day into four time intervals: 12:01am-6am, 6:01am-12pm, 12:01pm-6pm, 6:01pm-12am.
 
     a\.
@@ -135,34 +150,65 @@ flights %>%
 
     b\.
     Comment on how the likelihood of being delayed change throughout the day?
-
+GO BACK AND REVIEW
 6.  **Question 6 (15 points)** - Find the flight with the longest air time.
 
     a\.
-    How long is this flight?
+    How long is this flight?***The flight # 695 minutes long.***
 
     b\.
-    What city did it fly to?
+    What city did it fly to?***The city it flew into # Honululu.***
 
     c\.
-    How many seats does the plane that flew this flight have?
-
+    How many seats does the plane that flew this flight have?***The plane on this flight has 292 seats.***
+```{r}
+flights %>%
+  count(air_time, tailnum, dest) %>%
+  inner_join(planes, by = "tailnum") %>%
+  arrange(desc(air_time))
+```
 7.  **Question 7 (15 pts)** - The `airports` data frame contains information on a large number of primarily American airports.
     These data include location information for these airports in the form of latitude and longitude coordinates.
     In this question we limit our focus to the [Contiguous United States](https://en.wikipedia.org/wiki/Contiguous_United_States).
     Visualize and describe the distribution of the longitudes of airports in the Contiguous United States.
-    What does this tell you about the geographical distribution of these airports?
+    What does this tell you about the geographical distribution of these airports?***It tells my that the Northern point has 48 contiguous states with a lat of approx 49.38 and a lon of approx -95.15. The Southern point has 48 contiguous states with a lat approx 24.5 and a lon of approx -81.96. The Western point has 48 contiguous states with a lat of approx 48.17 and a lon of approx -124.77. The Eastern point is in the 50 states and has a lat of approx 44.81 and a lon of approx -66.94.***
     *Hint:* You will first need to limit your analysis to the Contiguous United States.
     [This Wikipedia article](https://en.wikipedia.org/wiki/List_of_extreme_points_of_the_United_States) can help, but you're welcomed to use other resources as well.
-    Make sure to cite whatever resource you use.
-
+    Make sure to cite whatever resource you use.***I used the notes, the Wikipedia article, and this website called www.veracalendario.info***
+```{r}
+airports %>%
+  filter(
+    lat > 24.520833333333332 & lat < 49.38447222222222, lon > -124.7716944444445 & -66.9470277777778
+  ) %>%
+  ggplot(aes(x = lon)) +
+  geom_histogram(binwidth = 5)
+```
 8.  **Question 8 (15 pts)** - Recreate the plot included below using the `flights` data.
     Once you have created the visualization, in no more than one paragraph, describe what you think the point of this visualization might be.
     *Hint:* The visualization uses the variable `arrival`, which is not included in the `flights` data frame.
     You will have to create `arrival` yourself, it is a categorical variable that is equal to `"ontime"` when `arr_delay <= 0` and `"delayed"` when `arr_delay > 0`.
 
 ![](img/plot-to-recreate.png)
-
+```{r}
+flights %>%
+  filter(dest %in% c("PHL", "RDU"))
+%>%
+  filter(month==12) %>%
+  mutate(
+    Arrival = case_when(
+      arr_delay <= 0 ~ "on time",
+      arr_delay > 0 ~ "delayed")) %>%
+  filter(!is.na(Arrival)) %>%
+  ggplot(aes(x = Arrival, y = dep_delay, color = dest)) +
+  geom_boxplot() +
+  labs(title = "NYC flights that are on time",
+       subtitle = "December 2013",
+       x = "Arrival",
+       y = "Departure Delay",
+       color = "Destination")
+```
+    
+  
 **Extra Credit (5 pts)** - Create a visualization that effectively shows if there is a relationship between the average daily departure delay and the average daily temperature for all three New York city airports.
 Your answer must be given in a single pipe.
 (You should only spend time on this question once you have finished answering the others)
